@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -21,22 +21,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            git \
-            zip \
-            unzip \
-            autoconf \
-            automake \
-            libtool \
-            pkg-config \
-            zlib1g-dev \
-            libffi-dev \
-            libssl-dev
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -52,8 +36,18 @@ jobs:
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          ls -la "$ANDROID_HOME/build-tools"
+          echo "JAVA_HOME=$JAVA_HOME"
+
+          sdkmanager --version
+
+          echo "=== BUILD TOOLS ==="
+          ls -lah "$ANDROID_HOME/build-tools"
+
+          echo "=== AIDL ==="
           find "$ANDROID_HOME/build-tools" -name aidl -type f
+
+          echo "=== SDKMANAGER ==="
+          which sdkmanager
 
       - name: Install Buildozer
         run: |
@@ -61,12 +55,18 @@ jobs:
           pip install buildozer
           pip install "cython==0.29.36"
 
-      - name: Configure Buildozer Android SDK
+      - name: Configure Android environment
         run: |
-          mkdir -p ~/.buildozer/android/platform
-          ln -sfn "$ANDROID_HOME" ~/.buildozer/android/platform/android-sdk
+          echo "ANDROIDSDK=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROIDSDK=$ANDROID_HOME"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
 
       - name: Build APK
+        env:
+          ANDROIDSDK: ${{ env.ANDROID_HOME }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
           buildozer android debug
 
