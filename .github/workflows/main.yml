@@ -1,3 +1,4 @@
+```yaml
 name: Build APK
 
 on:
@@ -11,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.11
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -27,27 +28,15 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-33"
-          sdkmanager "build-tools;35.0.0"
           yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;35.0.0"
 
       - name: Verify Android SDK
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "JAVA_HOME=$JAVA_HOME"
-
-          sdkmanager --version
-
-          echo "=== BUILD TOOLS ==="
-          ls -lah "$ANDROID_HOME/build-tools"
-
-          echo "=== AIDL ==="
-          find "$ANDROID_HOME/build-tools" -name aidl -type f
-
-          echo "=== SDKMANAGER ==="
-          which sdkmanager
+          ls -lah "$ANDROID_HOME/build-tools/35.0.0"
+          "$ANDROID_HOME/build-tools/35.0.0/aidl" --version
 
       - name: Install Buildozer
         run: |
@@ -55,18 +44,12 @@ jobs:
           pip install buildozer
           pip install "cython==0.29.36"
 
-      - name: Configure Android environment
+      - name: Configure Buildozer SDK
         run: |
-          echo "ANDROIDSDK=$ANDROID_HOME" >> "$GITHUB_ENV"
-          echo "ANDROIDSDK=$ANDROID_HOME"
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          mkdir -p "$HOME/.buildozer/android/platform"
+          ln -sfn "$ANDROID_HOME" "$HOME/.buildozer/android/platform/android-sdk"
 
       - name: Build APK
-        env:
-          ANDROIDSDK: ${{ env.ANDROID_HOME }}
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
           buildozer android debug
 
@@ -77,3 +60,4 @@ jobs:
           name: kalkulator-apk
           path: bin/*.apk
           if-no-files-found: error
+```
