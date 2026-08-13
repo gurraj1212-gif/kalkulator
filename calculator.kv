@@ -1,0 +1,142 @@
+#:import utils kivy.utils
+
+<Calculator>:
+
+    BoxLayout:
+        orientation: "vertical"
+        padding: 40
+        spacing: 10
+        size_hint: 1, 1
+
+        TextInput:
+            id: text_box
+            text: "0"
+            halign: "right"
+            font_size: 50
+            size_hint_y: 0.15
+            readonly: True
+            multiline: False
+
+        GridLayout:
+            cols: 4
+            rows: 5
+            spacing: 10
+            padding: 0, 30, 0, 0
+            size_hint: 1, 0.85
+
+            Button:
+                text: "%"
+                on_press: root.calculation("%")
+
+            Button:
+                text: "C"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ff0000")
+                color: utils.get_color_from_hex("#ffffff")
+                on_press: root.calculation("C")
+
+            Button:
+                text: "<<"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ff0000")
+                color: utils.get_color_from_hex("#ffffff")
+                on_press: root.calculation("<<")
+
+            Button:
+                text: "/"
+                on_press: root.calculation("/")
+
+            Button:
+                text: "7"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("7")
+
+            Button:
+                text: "8"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("8")
+
+            Button:
+                text: "9"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("9")
+
+            Button:
+                text: "+"
+                on_press: root.calculation("+")
+
+            Button:
+                text: "4"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("4")
+
+            Button:
+                text: "5"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("5")
+
+            Button:
+                text: "6"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("6")
+
+            Button:
+                text: "-"
+                on_press: root.calculation("-")
+
+            Button:
+                text: "1"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("1")
+
+            Button:
+                text: "2"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("2")
+
+            Button:
+                text: "3"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("3")
+
+            Button:
+                text: "*"
+                on_press: root.calculation("*")
+
+            Button:
+                text: "+/-"
+                on_press: root.calculation("+/-")
+
+            Button:
+                text: "0"
+                background_normal: ""
+                background_color: utils.get_color_from_hex("#ffffff")
+                color: utils.get_color_from_hex("#000000")
+                on_press: root.calculation("0")
+
+            Button:
+                text: "."
+                on_press: root.calculation(".")
+
+            Button:
+                text: "="
+                on_press: root.calculation("=")
+
