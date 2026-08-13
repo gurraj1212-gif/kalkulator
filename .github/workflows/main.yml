@@ -8,10 +8,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -23,34 +24,71 @@ jobs:
           java-version: "17"
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install Android SDK packages
         run: |
           yes | sdkmanager --licenses || true
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;35.0.0"
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;35.0.0"
 
       - name: Verify Android SDK
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "JAVA_HOME=$JAVA_HOME"
-          ls -lah "$ANDROID_HOME/build-tools/35.0.0"
-          "$ANDROID_HOME/build-tools/35.0.0/aidl" --version
 
-      - name: Install Buildozer
+          test -d "$ANDROID_HOME/platforms/android-33"
+          test -d "$ANDROID_HOME/build-tools/35.0.0"
+
+          echo "Android SDK OK"
+          "$ANDROID_HOME/build-tools/35.0.0/aidl" --help >/dev/null
+
+          echo "AIDL OK"
+
+      - name: Install Buildozer dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install buildozer
+          python -m pip install --upgrade pip setuptools wheel
+          pip install "buildozer==1.5.0"
           pip install "cython==0.29.36"
 
-      - name: Configure Buildozer SDK
+      - name: Show versions
+        run: |
+          python --version
+          pip --version
+          buildozer --version
+          cython --version
+          java -version
+          adb --version
+
+      - name: Configure Buildozer
         run: |
           mkdir -p "$HOME/.buildozer/android/platform"
-          ln -sfn "$ANDROID_HOME" "$HOME/.buildozer/android/platform/android-sdk"
+          ln -sfn "$ANDROID_HOME" \
+            "$HOME/.buildozer/android/platform/android-sdk"
+
+      - name: Check Buildozer configuration
+        run: |
+          echo "===== BUILD0ZER SPEC ====="
+          grep -E \
+            "^(title|package.name|package.domain|requirements|android.api|android.minapi|android.archs|p4a.bootstrap)" \
+            buildozer.spec || true
+
+      - name: Clean Buildozer
+        run: |
+          buildozer appclean
 
       - name: Build APK
         run: |
-          buildozer android debug
+          buildozer -v android debug
+
+      - name: Show APK
+        if: always()
+        run: |
+          echo "===== APK FILES ====="
+          find bin -maxdepth 1 -type f -name "*.apk" -print 2>/dev/null || true
 
       - name: Upload APK
         if: success()
