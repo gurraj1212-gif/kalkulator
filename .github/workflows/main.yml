@@ -1,4 +1,3 @@
-```yaml
 name: Build APK
 
 on:
@@ -60,4 +59,3 @@ jobs:
           name: kalkulator-apk
           path: bin/*.apk
           if-no-files-found: error
-```
