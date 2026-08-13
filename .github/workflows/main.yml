@@ -26,9 +26,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
-      - name: Install Android SDK packages
+      - name: Install Android SDK
         run: |
           yes | sdkmanager --licenses || true
+
           sdkmanager \
             "platform-tools" \
             "platforms;android-33" \
@@ -38,21 +39,71 @@ jobs:
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          echo "JAVA_HOME=$JAVA_HOME"
 
+          test -d "$ANDROID_HOME/platform-tools"
           test -d "$ANDROID_HOME/platforms/android-33"
           test -d "$ANDROID_HOME/build-tools/35.0.0"
 
-          echo "Android SDK OK"
-          "$ANDROID_HOME/build-tools/35.0.0/aidl" --help >/dev/null
+          echo "Android SDK components OK"
 
-          echo "AIDL OK"
+          "$ANDROID_HOME/platform-tools/adb" --version
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" version
 
-      - name: Install Buildozer dependencies
+      - name: Install Buildozer
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install "buildozer==1.5.0"
           pip install "cython==0.29.36"
+
+      - name: Prepare Buildozer Android SDK
+        run: |
+          mkdir -p "$HOME/.buildozer/android/platform/android-sdk"
+
+          # Pakai Android SDK milik GitHub Actions
+          ln -sfn "$ANDROID_HOME/platform-tools" \
+            "$HOME/.buildozer/android/platform/android-sdk/platform-tools"
+
+          ln -sfn "$ANDROID_HOME/platforms" \
+            "$HOME/.buildozer/android/platform/android-sdk/platforms"
+
+          ln -sfn "$ANDROID_HOME/build-tools" \
+            "$HOME/.buildozer/android/platform/android-sdk/build-tools"
+
+          # Buildozer versi ini mencari sdkmanager di tools/bin
+          mkdir -p "$HOME/.buildozer/android/platform/android-sdk/tools"
+
+          ln -sfn "$ANDROID_HOME/cmdline-tools/20.0" \
+            "$HOME/.buildozer/android/platform/android-sdk/tools"
+
+          echo "===== Buildozer SDK ====="
+          ls -lah "$HOME/.buildozer/android/platform/android-sdk"
+          ls -lah "$HOME/.buildozer/android/platform/android-sdk/tools/bin"
+
+          echo "===== SDKMANAGER ====="
+          "$HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager" --version
+
+          echo "===== PLATFORM TOOLS ====="
+          "$HOME/.buildozer/android/platform/android-sdk/platform-tools/adb" --version
+
+      - name: Configure Buildozer
+        run: |
+          echo "===== CURRENT BUILD0ZER SPEC ====="
+
+          grep -nE \
+            "^(title|package.name|package.domain|requirements|android.api|android.minapi|android.archs|android.skip_update)" \
+            buildozer.spec || true
+
+          # Pastikan Buildozer tidak mencoba download/update SDK lagi
+          if grep -q "^android.skip_update" buildozer.spec; then
+            sed -i 's/^android.skip_update.*/android.skip_update = True/' buildozer.spec
+          else
+            sed -i '/^\[app\]/a android.skip_update = True' buildozer.spec
+          fi
+
+          echo "===== AFTER CONFIGURATION ====="
+          grep -nE \
+            "^(android.api|android.minapi|android.archs|android.skip_update)" \
+            buildozer.spec
 
       - name: Show versions
         run: |
@@ -61,24 +112,6 @@ jobs:
           buildozer --version
           cython --version
           java -version
-          adb --version
-
-      - name: Configure Buildozer
-        run: |
-          mkdir -p "$HOME/.buildozer/android/platform"
-          ln -sfn "$ANDROID_HOME" \
-            "$HOME/.buildozer/android/platform/android-sdk"
-
-      - name: Check Buildozer configuration
-        run: |
-          echo "===== BUILD0ZER SPEC ====="
-          grep -E \
-            "^(title|package.name|package.domain|requirements|android.api|android.minapi|android.archs|p4a.bootstrap)" \
-            buildozer.spec || true
-
-      - name: Clean Buildozer
-        run: |
-          buildozer appclean
 
       - name: Build APK
         run: |
