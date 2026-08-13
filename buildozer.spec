@@ -1,4 +1,4 @@
-# This .spec config file tells Buildozer an app's requirements for being built.
+W# This .spec config file tells Buildozer an app's requirements for being built.
 #
 # It largely follows the syntax of an .ini file.
 # See the end of the file for more details and warnings about common mistakes.
@@ -109,7 +109,8 @@ fullscreen = 0
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-#android.api = 33
+#
+android.api = 33
 
 # (int) Minimum API your APK / AAB will support.
 #android.minapi = 24
